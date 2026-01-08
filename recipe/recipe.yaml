@@ -11,7 +11,7 @@ source:
 
 build:
   noarch: generic
-  number: 0
+  number: 1
 
 requirements:
   run:
@@ -22,10 +22,18 @@ requirements:
 
 tests:
   - script:
+      # Test flamegraph generation from pre-collapsed stacks
       - flamegraph test/results/perf-dd-stacks-01-collapsed-all.txt > graph.svg
+      # Test stackcollapse-perf on sample perf output
+      - stackcollapse-perf test/perf-dd-stacks-01.txt > collapsed.txt
+      # Test the full pipeline: stackcollapse -> flamegraph
+      - if: unix
+        then: stackcollapse-perf test/perf-dd-stacks-01.txt | flamegraph > full-pipeline.svg
+        else: stackcollapse-perf test/perf-dd-stacks-01.txt > temp.txt && flamegraph temp.txt > full-pipeline.svg
     files:
       source:
         - test/results/perf-dd-stacks-01-collapsed-all.txt
+        - test/perf-dd-stacks-01.txt
 
 about:
   homepage: https://www.brendangregg.com/flamegraphs.html
